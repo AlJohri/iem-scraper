@@ -33,6 +33,8 @@ def scrape_current(market_name):
     for table_row in table_rows:
         row = {header[i]: cell for i, cell in enumerate(parse_row(table_row))}
         row['timestamp'] = timestamp
+        row['market_name'] = market_name
+        row['market_id'] = market_id
         rows.append(row)
 
     return rows
@@ -61,7 +63,6 @@ def scrape_historical(market_name):
         reqs.append(req)
         open_date = open_date.replace(months=+1)
 
-    header = None
     rows = []
 
     for response in grequests.imap(reqs, exception_handler=exception_handler):
@@ -69,13 +70,12 @@ def scrape_historical(market_name):
         if "No data exists for the month and year you selected" in response.text:
           continue
 
-        curr_header, curr_rows = parse_historical_page(response)
-        header = curr_header
+        curr_rows = parse_historical_page(response)
         rows += curr_rows
 
-    rows.sort(key=lambda row: arrow.get(row[0], 'MM/DD/YY'))
+    rows.sort(key=lambda row: arrow.get(row['Date'], 'MM/DD/YY'))
 
-    return [header] + rows
+    return rows
 
 def parse_historical_page(response):
     doc = lxml.html.fromstring(response.content)
@@ -88,7 +88,7 @@ def parse_historical_page(response):
 
     rows = []
     for table_row in table_rows:
-        row = parse_row(table_row)
+        row = {header[i]: cell for i, cell in enumerate(parse_row(table_row))}
         rows.append(row)
 
-    return header, rows
+    return rows

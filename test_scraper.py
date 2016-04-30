@@ -9,7 +9,14 @@ rows = scrape_historical('PRES16_WTA')
 df = pd.DataFrame(rows)
 print(df)
 
+rows = scrape_current('PRES16_WTA')
+pp(rows)
+
 print('------------------------------------------------')
 
-rows = scrape_current('PRES16_WTA')
+rows = scrape_historical('PRES16_VS')
+df = pd.DataFrame(rows)
+print(df)
+
+rows = scrape_current('PRES16_VS')
 pp(rows)

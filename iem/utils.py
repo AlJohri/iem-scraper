@@ -20,8 +20,9 @@ def timeit_context(name):
     elapsedTime = time.time() - startTime
     logging.debug('[{}] finished in {} ms'.format(name, int(elapsedTime * 1000)))
 
-def to_csv(rows):
+def to_csv(rows, fieldnames):
     f = io.StringIO()
-    writer = csv.writer(f)
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
     writer.writerows(rows)
     return f.getvalue()
