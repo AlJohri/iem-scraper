@@ -1,4 +1,4 @@
-import grequests, lxml.html, arrow, logging
+import requests, grequests, lxml.html, arrow, logging
 
 from iem.settings import tz, session
 from iem.data import markets
@@ -7,22 +7,49 @@ from iem.utils import timeit
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('requests').setLevel(logging.WARN)
 
+def parse_row(table_row):
+    return [cell.text_content().strip() if cell.text_content() else None for cell in table_row.cssselect("td")]
+
 def exception_handler(request, exception):
     print("Request failed")
 
 @timeit
+def scrape_current(market_name):
+
+    market_id = markets[market_name]['id']
+    response = session.get("https://iemweb.biz.uiowa.edu/quotes/%s.html" % market_id)
+
+    doc = lxml.html.fromstring(response.content)
+    timestamp = doc.cssselect("font b")[0].text_content()
+
+    table = doc.cssselect("table")[0]
+
+    header_row = table.cssselect("tr")[0]
+    table_rows = table.cssselect("tr")[1:]
+
+    header = parse_row(header_row)
+
+    rows = []
+    for table_row in table_rows:
+        row = {header[i]: cell for i, cell in enumerate(parse_row(table_row))}
+        row['timestamp'] = timestamp
+        rows.append(row)
+
+    return rows
+
+@timeit
 def scrape_historical(market_name):
-    
+
     market_id = markets[market_name]['id']
     open_date = markets[market_name]['open_date']
     close_date = markets[market_name].get('close_date') or arrow.now().replace(tzinfo=tz)
 
     logging.info("Downloading data from {} to {}".format(
-        open_date.strftime("%B %Y"), 
+        open_date.strftime("%B %Y"),
         close_date.strftime("%B %Y")))
-    
+
     reqs = []
-    
+
     while open_date < close_date:
         params = {
             "Market_ID": market_id,
@@ -42,7 +69,7 @@ def scrape_historical(market_name):
         if "No data exists for the month and year you selected" in response.text:
           continue
 
-        curr_header, curr_rows = parse_data(response)
+        curr_header, curr_rows = parse_historical_page(response)
         header = curr_header
         rows += curr_rows
 
@@ -50,18 +77,18 @@ def scrape_historical(market_name):
 
     return [header] + rows
 
-def parse_data(response):
+def parse_historical_page(response):
     doc = lxml.html.fromstring(response.content)
 
     table = doc.cssselect("table")[0]
     header_row = table.cssselect("tr")[0]
     table_rows = table.cssselect("tr")[1:]
 
-    header = [cell.text_content().strip() for cell in header_row.cssselect("td")]
+    header = parse_row(header_row)
 
     rows = []
     for table_row in table_rows:
-        row = [cell.text.strip() if cell.text else None for cell in table_row.cssselect("td")]
+        row = parse_row(table_row)
         rows.append(row)
 
     return header, rows
