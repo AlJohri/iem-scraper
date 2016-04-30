@@ -1,0 +1,19 @@
+{
+    "name": "iem-scraper",
+    "cluster": "perso.nile.works",
+    "port": 5000,
+    "routes": [
+        { "path": "/", "external": false }
+    ],
+    "builds": [
+        { "notify": "perso-hal", "branch": "master", "version": "1.0" }
+    ],
+    "stages": [
+      {
+        "domain": "iem-scraper.internal.perso.nile.works",
+        "name": "prod",
+        "scale": 1,
+        "environment": { "FLASK_ENV": "Prod" }
+      }
+  ]
+}

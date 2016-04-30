@@ -1,0 +1,10 @@
+name: iem
+dependencies:
+- python=3.5.1=0
+- flask=0.10.1=py35_1
+- lxml=3.6.0=py35_0
+- cssselect=0.9.1=py35_0
+- pytz=2016.2=py35_0
+- pip:
+  - arrow==0.7.0
+  - grequests==0.3.0

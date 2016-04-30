@@ -13,7 +13,7 @@ def hello():
     rows = scrape_historical('PRES16_WTA')
     data_csv = to_csv(rows)
     output = make_response(data_csv)
-    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-Disposition"] = "attachment; filename=PRES16_WTA.csv"
     output.headers["Content-type"] = "text/csv"
     return output
 
