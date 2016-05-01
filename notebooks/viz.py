@@ -19,7 +19,7 @@ def plot_interactive_timeseries(df, col):
         plot_width=bokeh.charts.defaults.width, 
         plot_height=bokeh.charts.defaults.height, 
         x_axis_type="datetime",
-        title="Date vs %s" % col)
+        title="PRES16_WTA: Date vs %s" % col)
 
     for contract, group in df.groupby('Contract'):
         source = ColumnDataSource(group)
