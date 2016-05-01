@@ -4,13 +4,15 @@ from bokeh.plotting import figure
 
 def plot_interactive_timeseries(df, col):
 
+    # https://github.com/bokeh/bokeh/pull/3883
+
     hover = HoverTool(tooltips=[
         ("y (%s)" % col, "$y{1.11}"),
         ("Date", "@DateStr"),
         ("LastPrice", "@LastPrice{1.11}"),
         ("LowPrice", "@LowPrice{1.11}"),
         ("HighPrice", "@HighPrice{1.11}"),
-        ("AvgPrice", "@AvgPrice{1.11}"),
+        # ("AvgPrice", "@AvgPrice{1.11}"),
         ("Units", "@Units{int}"),
         ("Volume", "@Volume{1.11}")
     ])
@@ -22,7 +24,7 @@ def plot_interactive_timeseries(df, col):
         title="PRES16_WTA: Date vs %s" % col)
 
     for contract, group in df.groupby('Contract'):
-        source = ColumnDataSource(group)
+        source = ColumnDataSource(group[[x for x in group.columns if x != "AvgPrice"]])
         source.add(group.Date.map(lambda x: x.strftime('%x')), 'DateStr')
         color = "blue" if contract == "DEM16_WTA" else ("red" if contract == "REP16_WTA" else "black")
         p.line(x='Date', y=col, color=color, legend=contract,
